@@ -88,7 +88,7 @@ def save_data(data: List[Dict[str, Any]]) -> None:
 def analyze_data(df: pd.DataFrame) -> None:
     """Анализирует данные и выводит статистику."""
     # Подсчет устройств по типам
-    cnt_chassi = df.groupby('type').size()
+    cnt_chassi = df.groupby('type', as_index=False).size()
 
     # Подсчет устройств с отключенными вентиляторами
     fan_columns = ['s_fan_1', 's_fan_2', 's_fan_3', 's_fan_4', 's_fan_5']
@@ -125,9 +125,11 @@ def save_to_excel_sheets(data_dict: dict) -> None:
     """Сохраняет данные в Excel файл с отдельными листами."""
     try:
         with pd.ExcelWriter("output.xlsx", engine='openpyxl') as writer:
+            # Сохраняем DataFrame
+            df.to_excel(writer,sheet_name="Общая информация", index=False)
+
             # Сохраняем статистику
             pd.DataFrame([{
-                'Количество устройств по типам': data_dict['device_count'].to_string(),
                 'Устройства с отключенными вентиляторами': data_dict['fans_disabled'],
                 'Устройства с двумя отключенными вентиляторами': data_dict['two_fans_disabled'],
                 'Устройства с высокой температурой': data_dict['high_temp_devices']
