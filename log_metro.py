@@ -84,6 +84,49 @@ def save_data(data: List[Dict[str, Any]]) -> None:
         print(f"Ошибка при сохранении данных: {e}")
 
 
+# Работа с датафреймом:
+def analyze_data(df: pd.DataFrame) -> None:
+    """Анализирует данные и выводит статистику."""
+    # Подсчет устройств по типам
+    cnt_chassi = df.groupby('type').size()
+    print("Количество устройств по типам:")
+    print(cnt_chassi)
+    print()
+
+    # Подсчет устройств с отключенными вентиляторами
+    fan_columns = ['s_fan_1', 's_fan_2', 's_fan_3', 's_fan_4', 's_fan_5']
+    cnt_1_fan_check = (df[fan_columns] == 0).any(axis=1).sum()
+    print(f"Устройства с отключенными вентиляторами: {cnt_1_fan_check}")
+
+    # Подсчет устройств с двумя отключенными вентиляторами (кроме MX104)
+    cnt_2_fans_check = ((df['s_fan_1'] == 0) & (df['s_fan_2'] == 0) & (df["type"] != "MX104")).sum()
+    print(f"Устройства с двумя отключенными вентиляторами (не MX104): {cnt_2_fans_check}")
+
+    # Подсчет устройств с высокой температурой
+    temp_columns = ['temp PEM_0', 'temp PEM_1', 'temp RE_0', 'temp RE_1']
+    temp_warm = ((df['temp PEM_0'] > 50) | (df['temp PEM_1'] > 50) | (df['temp RE_0'] > 50) | (
+                df['temp RE_1'] > 50)).sum()
+    print(f"Устройства с высокой температурой: {temp_warm}")
+    print()
+
+    # Фильтрация устройств с проблемами
+    df_fan_alarm = df[(df['s_fan_1'] == 0) |
+                      (df['s_fan_2'] == 0) |
+                      (df['s_fan_3'] == 0) |
+                      (df['s_fan_4'] == 0) |
+                      (df['s_fan_5'] == 0)]
+
+    df_temp_alarm = df[
+        (df['temp PEM_0'] > 50) | (df['temp PEM_1'] > 50) | (df['temp RE_0'] > 50) | (df['temp RE_1'] > 50)]
+
+    print("Устройства с отключенными вентиляторами:")
+    print(df_fan_alarm[['name', 'type']])
+    print()
+
+    print("Устройства с высокой температурой:")
+    print(df_temp_alarm[['name', 'type']])
+
+
 # Основная программа
 if __name__ == "__main__":
     clear_log()
@@ -93,4 +136,17 @@ if __name__ == "__main__":
     # Создание DataFrame для удобного просмотра
     if data:
         df = pd.DataFrame(data)
+        print("Данные:")
         print(df)
+        print()
+
+        # Преобразование типов данных
+        numeric_cols = ['temp PEM_0', 'temp PEM_1', 'temp RE_0', 'temp RE_1',
+                        's_fan_1', 's_fan_2', 's_fan_3', 's_fan_4', 's_fan_5']
+
+        for col in numeric_cols:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors='coerce').astype('Int64')
+
+        # Анализ данных
+        analyze_data(df)
