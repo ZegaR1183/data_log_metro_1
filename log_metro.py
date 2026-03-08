@@ -142,9 +142,11 @@ def save_to_excel_sheets(data_dict: dict) -> None:
             # Сохраняем устройства с высокой температурой
             data_dict['temp_alarm_devices'].to_excel(writer, sheet_name='Температура', index=False)
 
-            # Настройка ширины столбцов для всех листов
+            # Настройка стиля для всех листов
             for sheet_name in writer.sheets:
                 worksheet = writer.sheets[sheet_name]
+
+                # Установка ширины столбцов
                 for column in worksheet.columns:
                     max_length = 0
                     column_letter = column[0].column_letter
@@ -161,6 +163,35 @@ def save_to_excel_sheets(data_dict: dict) -> None:
                 for column in worksheet.columns:
                     for cell in column:
                         cell.alignment = openpyxl.styles.Alignment(horizontal='center')
+
+            # Применение условного форматирования к основному листу
+            worksheet = writer.sheets["Общая информация"]
+
+            # Закрашивание ячеек с 0 в столбцах вентиляторов
+            fan_columns = ['s_fan_1', 's_fan_2', 's_fan_3', 's_fan_4', 's_fan_5']
+            for col in fan_columns:
+                if col in df.columns:
+                    col_idx = df.columns.get_loc(col) + 1  # +1 because openpyxl uses 1-based indexing
+                    for row in range(2, len(df) + 2):  # +2 because of header and 1-based indexing
+                        cell = worksheet.cell(row=row, column=col_idx)
+                        if cell.value == 0:
+                            cell.fill = openpyxl.styles.PatternFill(start_color="FF0000", end_color="FF0000",
+                                                                    fill_type="solid")
+
+            # Закрашивание ячеек с температурой > 50
+            temp_columns = ['temp PEM_0', 'temp PEM_1', 'temp RE_0', 'temp RE_1']
+            for col in temp_columns:
+                if col in df.columns:
+                    col_idx = df.columns.get_loc(col) + 1
+                    for row in range(2, len(df) + 2):
+                        cell = worksheet.cell(row=row, column=col_idx)
+                        try:
+                            if cell.value is not None and float(cell.value) > 50:
+                                cell.fill = openpyxl.styles.PatternFill(start_color="FF0000", end_color="FF0000",
+                                                                        fill_type="solid")
+                        except (ValueError, TypeError):
+                            pass
+
 
         print("Данные успешно сохранены в output.xlsx")
     except Exception as e:
