@@ -120,11 +120,11 @@ def analyze_data(df: pd.DataFrame) -> None:
         (df['temp PEM_0'] > 50) | (df['temp PEM_1'] > 50) | (df['temp RE_0'] > 50) | (df['temp RE_1'] > 50)]
 
     print("Устройства с отключенными вентиляторами:")
-    print(df_fan_alarm[['name', 'type']])
+    print(df_fan_alarm)
     print()
 
     print("Устройства с высокой температурой:")
-    print(df_temp_alarm[['name', 'type']])
+    print(df_temp_alarm)
 
 
 # Основная программа
