@@ -141,6 +141,21 @@ def save_to_excel_sheets(data_dict: dict) -> None:
             # Сохраняем устройства с высокой температурой
             data_dict['temp_alarm_devices'].to_excel(writer, sheet_name='Температура', index=False)
 
+            # Настройка ширины столбцов для всех листов
+            for sheet_name in writer.sheets:
+                worksheet = writer.sheets[sheet_name]
+                for column in worksheet.columns:
+                    max_length = 0
+                    column_letter = column[0].column_letter
+                    for cell in column:
+                        try:
+                            if len(str(cell.value)) > max_length:
+                                max_length = len(str(cell.value))
+                        except:
+                            pass
+                    adjusted_width = min(max_length + 2, 50)  # Максимум 50 символов
+                    worksheet.column_dimensions[column_letter].width = adjusted_width
+
         print("Данные успешно сохранены в output.xlsx")
     except Exception as e:
         print(f"Ошибка при сохранении в Excel: {e}")
