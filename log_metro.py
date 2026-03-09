@@ -5,8 +5,8 @@ from typing import List, Dict, Any
 
 # Константы
 LOG_FILE_IN = "result_output"
-LOG_FILE_OUT = "clear_log.txt"
-DATA_FILE_OUT = "dict_all.txt"
+LOG_FILE_OUT = "./temp/clear_log.txt"
+DATA_FILE_OUT = "./temp/dict_all.txt"
 
 # Настройки вывода для DataFrame
 pd.set_option('display.max_columns', None)
